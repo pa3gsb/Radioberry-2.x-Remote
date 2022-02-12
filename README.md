@@ -5,7 +5,7 @@
 
 Running in browser. 
 
-Target to make the app responsive.
+![Radioberry-2.x-Remote](gallery/remote_app_v0_1.PNG)
 
 ## Backend
 
