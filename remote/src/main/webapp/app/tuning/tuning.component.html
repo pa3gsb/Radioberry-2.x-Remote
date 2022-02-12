@@ -1,0 +1,45 @@
+<div class="w3-row">
+
+
+  <div class="w3-col s4 m3 l3 w3-flat-emerald w3-left-align">
+
+    <div class="w3-bar">
+
+      <button class="w3-btn w3-flat-emerald w3-border w3-large" (click)="searchDown()">
+        <p class="w3-center"><b><<</b></p>
+      </button>
+
+      <button class="w3-btn w3-flat-emerald w3-border w3-large" (touchstart)="freqDecr()" (touchend)="freqDecr()" (mousedown)="freqDecr()" (mouseup)="freqDecr()">
+        <p class="w3-center"><b>-</b></p>
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="w3-col s4 m6 l6 w3-flat-emerald w3-center " >
+    <button class="w3-btn w3-flat-emerald w3-large w3-center w3-border ">
+      <p class="w3-center"><b>{{frequency}}</b></p>
+    </button>
+  </div>
+
+
+  <div class="w3-col s4 m3 l3 w3-flat-emerald w3-right-align">
+
+    <div class="w3-bar">
+
+      <button class="w3-btn w3-flat-emerald w3-border w3-large" (touchstart)="freqIncr()" (touchend)="freqIncr()" (mousedown)="freqIncr()" (mouseup)="freqIncr()">
+        <p class="w3-center"><b>+</b></p>
+      </button>
+
+      <button class="w3-btn w3-flat-emerald w3-border w3-large " (click)="searchUp();">
+        <p class="w3-center"><b>>></b></p>
+      </button>
+
+    </div>
+
+  </div>
+
+
+</div>

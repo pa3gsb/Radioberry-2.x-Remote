@@ -1,0 +1,15 @@
+#spectrum {
+  z-index: -10;
+  position: absolute;
+  background-color: transparent;
+  border: 1px solid red;
+  opacity: 0.35;
+}
+
+
+
+
+
+
+
+

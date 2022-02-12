@@ -1,0 +1,6 @@
+#hfspectrum {
+  z-index: -5;
+  position: absolute;
+  background-color: transparent;
+  border: 1px solid red;
+}

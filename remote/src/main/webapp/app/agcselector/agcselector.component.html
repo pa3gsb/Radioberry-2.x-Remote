@@ -1,0 +1,17 @@
+  <div class="w3-bar">
+    <button class="w3-btn w3-green" id='off' (click)="agcChange('OFF')" [ngClass]="{'w3-green': off, 'w3-black': !off}">
+      off
+    </button>
+    <button class="w3-btn w3-black" id='slow' (click)="agcChange('SLOW')"
+            [ngClass]="{'w3-green': slow, 'w3-black': !slow}">slow
+    </button>
+    <button class="w3-btn w3-black" id='long' (click)="agcChange('LONG')"
+            [ngClass]="{'w3-green': long, 'w3-black': !long}">long
+    </button>
+    <button class="w3-btn w3-black" id='medium' (click)="agcChange('MED')"
+            [ngClass]="{'w3-green': medium, 'w3-black': !medium}">medium
+    </button>
+    <button class="w3-btn w3-black" id='fast' (click)="agcChange('FAST')"
+            [ngClass]="{'w3-green': fast, 'w3-black': !fast}">fast
+    </button>
+  </div>

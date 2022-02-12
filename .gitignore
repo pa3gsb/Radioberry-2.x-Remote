@@ -1,0 +1,17 @@
+
+#intellij
+*.iml
+*.idea
+
+#no backup files
+*.bak
+
+#java
+*.class
+
+#angular
+*.angular
+node_modules
+
+**/target/*
+**/dist/*

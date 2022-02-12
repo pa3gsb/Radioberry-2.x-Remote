@@ -1,0 +1,33 @@
+/*.radio-container {*/
+/*  position:fixed;*/
+/*  left:0;*/
+/*  top:0;*/
+/*  width:100%;*/
+/*  height:100%;*/
+/*}*/
+
+/*.w3-row-padding {*/
+/*  position: fixed;*/
+/*  top: 87%;*/
+/*  left:0;*/
+/*  width:100%;*/
+/*  height:100%;*/
+/*  opacity: 0.4;*/
+/*}*/
+
+/*.grid-container {*/
+/*  display: grid;*/
+/*  grid-template-columns: auto auto auto auto;*/
+/*  grid-gap: 10px;*/
+/*  background-color: #2196F3;*/
+/*  padding: 10px;*/
+/*}*/
+
+/*.grid-container > div {*/
+/*  background-color: rgba(255, 255, 255, 0.8);*/
+/*  text-align: center;*/
+/*  padding: 20px 0;*/
+/*  font-size: 30px;*/
+/*}*/
+
+

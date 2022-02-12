@@ -1,0 +1,18 @@
+/* You can add global styles to this file, and also import other style files */
+@import "assets/css/w3.css";
+
+#radioberry_dial {
+  top: 60%;
+  left: 80%;
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  margin: 20px auto;
+  background: url('assets/image/base_one_bg.png');
+}
+
+#radioberry_dial_knob {
+  background: url('assets/image/base_one_knob.png');
+}
+
+

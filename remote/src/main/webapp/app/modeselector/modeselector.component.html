@@ -1,0 +1,15 @@
+<div class="w3-row">
+
+  <div class="w3-col s12  w3-center">
+
+    <div class="w3-bar">
+      <button class="w3-bar-item w3-large" id='lsb' (click)="modeChange('LSB')"
+              [ngClass]="{'w3-teal': lsb, 'w3-flat-emerald': !lsb}">LSB
+      </button>
+      <button class="w3-bar-item w3-large" id='usb' (click)="modeChange('USB')"
+              [ngClass]="{'w3-teal': usb, 'w3-flat-emerald': !usb}">USB
+      </button>
+    </div>
+
+  </div>
+</div>

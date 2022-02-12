@@ -1,0 +1,110 @@
+
+/*.audio-bar {*/
+/*  color: pink;*/
+/*  height: 2em;*/
+/*  background-color: pink;*/
+/*  width: 0;*/
+/*  margin-left: 1.5em;*/
+/*}*/
+
+
+
+/* CSS files add styling rules to your content */
+
+body {
+  font-family: helvetica, arial, sans-serif;
+  margin: 2em;
+}
+
+h1 {
+  font-style: bold;
+  color: #330000;
+}
+
+.control-box {
+  margin-top:1em;
+  width: 20em;
+  border: 2px solid #333;
+  border-radius: 2em;
+  padding: 1em;
+}
+
+.control {
+  margin-bottom:1em;
+}
+
+.control input {
+  width: 14em;
+  left: 20em;
+  float: right;
+}
+
+
+
+
+
+body {
+  margin: 0;
+  padding: 0;
+
+  background-color: #20222e;
+  font-family: "Verdana";
+}
+/*.container {*/
+/*  //background-color: #292a38;*/
+/*  border-radius: 8px;*/
+/*  padding: 20px;*/
+
+/*  position: fixed;*/
+/*  top: 50%;*/
+/*  left: 50%;*/
+/*  transform: translate(-50%, -50%);*/
+
+/*  display: flex;*/
+/*  flex-direction: column;*/
+/*  justify-content: space-between;*/
+/*  align-items: center;*/
+
+/*  height: 150px;*/
+/*}*/
+/*span {*/
+/*  font-size: 20px;*/
+/*  font-weight: bold;*/
+/*  color: #ffffff;*/
+/*}*/
+
+.volumen-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.led {
+  width: 40px;
+  height: 25px;
+  /*background-color: #292a38;*/
+  border-radius: 4px;
+
+  box-shadow: -2px -2px 4px 0px #a7a7a73d inset, 2px 2px 4px 0px #0a0a0e5e inset;
+  margin: 0 5px;
+}
+
+.spatie {
+  width: 40px;
+  height: 25px;
+  border-radius: 4px;
+  margin: 0 5px;
+}
+
+
+/*.audio-control {*/
+/*  cursor: pointer;*/
+/*  color: #fff;*/
+
+/*  box-shadow: -2px -2px 4px 0px #a7a7a73d, 2px 2px 4px 0px #0a0a0e5e;*/
+/*  padding: 8px;*/
+
+/*  font-size: 25px;*/
+/*  border-radius: 50%;*/
+/*}*/
