@@ -23,26 +23,11 @@ public class WebRadio {
   @PostConstruct
   public void afterCreate() {
     System.out.println("Web Radio bean created; now start radio...");
-    handleWisdom();
     radio.start();
   }
 
   public IRadio getRadio() {
     return radio;
-  }
-
-  private void handleWisdom() {
-    // need to check if wisdom file differs???
-    String bits = "x86";
-    if (System.getProperty("os.arch") != null && System.getProperty("os.arch").endsWith("64")) {
-      bits = "x64";
-    }
-    String wdspPath = File.separator + ".radioberry" + File.separator + bits + File.separator;
-    String wisdomDirectory=System.getProperty("user.home") + wdspPath;
-    File file = new File(wisdomDirectory);
-    file.mkdirs();
-
-    wdsp.WDSPwisdom(wisdomDirectory);
   }
 
 }

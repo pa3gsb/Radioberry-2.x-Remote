@@ -52,7 +52,7 @@ public class Wdsp {
       System.load(libraryPath+File.separator+"libfftw3.so");
       System.load(libraryPath+File.separator+"libwdsp.so");
       System.load(libraryPath+File.separator+"libwdspj.so");
-      System.loadLibrary("wdspj");
+      //System.loadLibrary("wdspj");
     }
 
     if(System.getProperty("os.name").startsWith("Mac")) {
@@ -60,7 +60,7 @@ public class Wdsp {
       String libraryPath = resource.getPath();
       System.load(libraryPath+File.separator+"libfftw3.3.dylib");
       System.load(libraryPath+File.separator+"libwdsp.dylib");
-      System.loadLibrary("wdsp");
+      //System.loadLibrary("wdsp");
     }
 
   }
@@ -255,7 +255,7 @@ public class Wdsp {
 
   public native void SetRXAEQCtfmode (int channel, int mode);
 
-  public native void SetRXAEQProfile (int channel, int nfreqs, double F, double G);
+  public native void SetRXAEQProfile (int channel, int nfreqs, double[] F, double[] G);
 
   /**
    * AGC
@@ -517,7 +517,7 @@ public class Wdsp {
 
   public native void SetTXAEQCtfmode (int channel, int mode);
 
-  public native void SetTXAEQProfile (int channel, int nfreqs, double F, double G);
+  public native void SetTXAEQProfile (int channel, int nfreqs, double[] F, double[] G);
 
   /**
    * FM Pre-emphasis
@@ -555,7 +555,7 @@ public class Wdsp {
 
   public native void SetTXACFCOMPRun (int channel, int run);
 
-  public native void SetTXACFCOMPprofile (int channel, int nfreqs, double F, double G, double E);
+  public native void SetTXACFCOMPprofile (int channel, int nfreqs, double[] F, double[] G, double[] E);
 
   public native void SetTXACFCOMPPrecomp (int channel, double precomp);
 

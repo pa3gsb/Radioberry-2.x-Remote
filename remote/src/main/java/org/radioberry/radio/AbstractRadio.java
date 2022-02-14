@@ -7,6 +7,7 @@ import org.radioberry.utility.Configuration;
 import org.radioberry.utility.Log;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.util.Date;
 
 public abstract class AbstractRadio implements IRadio {
@@ -23,10 +24,25 @@ public abstract class AbstractRadio implements IRadio {
   Wdsp wdsp = Wdsp.getInstance();
 
   public AbstractRadio() {
+    handleWisdom();
     setupReceiver();
     setupTransmitter();
     setSpectrumAnalyzer();
     setupMicrophoneStream();
+  }
+
+  private void handleWisdom() {
+    // need to check if wisdom file differs???
+    String bits = "x86";
+    if (System.getProperty("os.arch") != null && System.getProperty("os.arch").endsWith("64")) {
+      bits = "x64";
+    }
+    String wdspPath = File.separator + ".radioberry" + File.separator + bits + File.separator;
+    String wisdomDirectory=System.getProperty("user.home") + wdspPath;
+    File file = new File(wisdomDirectory);
+    file.mkdirs();
+
+    wdsp.WDSPwisdom(wisdomDirectory);
   }
 
   void setActiveChannel(Radio radio) {
@@ -74,6 +90,19 @@ public abstract class AbstractRadio implements IRadio {
     wdsp.SetTXAPanelGain1(Channel.TX, 5.0);
     wdsp.SetTXAMode(Channel.TX, Settings.LSB);
     wdsp.SetTXABandpassFreqs(Channel.TX, Settings.filterLow[Settings.LSB], Settings.filterHigh[Settings.LSB]);
+    wdsp.SetTXAEQRun(Channel.TX, 1);
+    wdsp.SetTXAEQWintype (Channel.TX, 0);
+    // equalizer values; i do send 6000 Hz ...
+    // without the equalizer...there is to much low in the spectrum... fixed setup.
+    double[] freqs = new double[11];
+    double[] gains = new double[11];
+    freqs[0] = 0.0;
+    freqs[1] = 32.0; freqs[2] = 63.0; freqs[3] = 125.0; freqs[4] = 250.0; freqs[5] = 500.0;
+    freqs[6] = 1000.0; freqs[7] = 2000.0; freqs[8] = 4000.0; freqs[9] = 8000.0; freqs[10] = 16000.0;
+    gains[0] = 0.0;
+    gains[1] = -4.0; gains[2] = -3.0; gains[3] = -2.0; gains[4] = 0.0; gains[5] = 7.0;
+    gains[6] = 12.0; gains[7] = 12.0; gains[8] = 12.0; gains[9] = 12.0; gains[10] = 12.0;
+    wdsp.SetTXAEQProfile(Channel.TX, 10, freqs, gains);
   }
 
   @Override
