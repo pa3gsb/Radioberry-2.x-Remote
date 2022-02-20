@@ -33,7 +33,9 @@ export class VolumeComponent implements OnInit{
       });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log("ng on init volume");
+  }
 
   playWebAudio(data: any): void {
     if (this.audioOn) this.player.feed(data.audio);

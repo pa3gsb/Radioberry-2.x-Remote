@@ -14,16 +14,13 @@ public class Configuration {
 
   public final static boolean NB2 = false;
   public final static boolean NB2_AE = true;
-  public final static int NB2_GAIN = 1; // 0:Linear 1:Log
-  public final static int NB2_NPE = 0; // 0:OSMS 1:MMSE
+  public final static int NB2_GAIN = 1;     // 0:Linear 1:Log
+  public final static int NB2_NPE = 0;      // 0:OSMS 1:MMSE
   public final static int NB2_POSITION = 1; // 0:PRE-AGC 1:POST-AGC
 
   public final static boolean NR = false;
   public final static boolean NB = false;
   public final static boolean ANF = false;
-
-
-  public final static String IP_BROADCAST = "255.255.255.255";
 
   public final static float afgain = 1.0F;
   public final static float micgain = 4.0F;

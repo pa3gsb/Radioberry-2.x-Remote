@@ -1,21 +1,15 @@
 package org.radioberry.radio;
 
-import org.openhpsdr.dsp.Wdsp;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
-import java.io.File;
-import java.net.URL;
 
 @ApplicationScoped
 @Startup
 @Default
 public class WebRadio {
-
-  Wdsp wdsp = Wdsp.getInstance();
 
   @Inject
   private IRadio radio;

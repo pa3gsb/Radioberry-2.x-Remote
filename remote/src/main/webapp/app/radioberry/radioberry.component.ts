@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, Renderer2, ViewChild} from '@angular/core';
 
 @Component({
   selector: 'rb-radioberry',
@@ -7,9 +7,17 @@ import { Component, OnInit } from '@angular/core';
 })
 export class RadioberryComponent implements OnInit {
 
-  constructor() { }
+  styleExp = "none";
 
-  ngOnInit() {
+  constructor( ) { }
+
+  ngOnInit() { }
+
+  w3_open() {
+    this.styleExp = "block";
   }
 
+  w3_close() {
+    this.styleExp = "none";
+  }
 }

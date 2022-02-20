@@ -216,17 +216,17 @@ public abstract class AbstractRadio implements IRadio {
 
     for (int i = 0; i < inputStream.length; i++) {
 
-      // for testing ; see if audio from remote device is audible.
-      short lsample = (short) inputStream[i];
-      short rsample = (short) inputStream[i];
-      audiooutput[audiooutputindex++] = (byte) ((lsample >> 8) & 0xFF);
-      audiooutput[audiooutputindex++] = (byte) (lsample & 0xFF);
-      audiooutput[audiooutputindex++] = (byte) ((rsample >> 8) & 0xFF);
-      audiooutput[audiooutputindex++] = (byte) (rsample & 0xFF);
-      if (audiooutputindex == audiooutput.length) {
-        //localAudio.writeAudio(audiooutput);  // listening local.
-        audiooutputindex = 0;
-      }
+//      // for testing ; see if audio from remote device is audible.
+//      short lsample = (short) inputStream[i];
+//      short rsample = (short) inputStream[i];
+//      audiooutput[audiooutputindex++] = (byte) ((lsample >> 8) & 0xFF);
+//      audiooutput[audiooutputindex++] = (byte) (lsample & 0xFF);
+//      audiooutput[audiooutputindex++] = (byte) ((rsample >> 8) & 0xFF);
+//      audiooutput[audiooutputindex++] = (byte) (rsample & 0xFF);
+//      if (audiooutputindex == audiooutput.length) {
+//        //localAudio.writeAudio(audiooutput);  // listening local.
+//        audiooutputindex = 0;
+//      }
 
       // execute the modulation before further processing
       inlsamples[index] = (float) inputStream[i] / 32767.0F * Configuration.micgain; // convert 16 bit samples to -1.0 .. +1.0

@@ -23,6 +23,10 @@ export class TuningComponent implements OnInit {
 
   constructor(private radiocontrolService: RadioberryService) {
       this.radio = radiocontrolService.getRadioState();
+      if (this.radio !== undefined) {
+            this.freq = this.radio.frequency;
+            this.updateFrequencyDisplay();
+      }
       radiocontrolService.radioUpdate.subscribe(
         (radio :Radio) => {
           console.log('radio change received ' + radio.frequency + ' ' + this.freq);

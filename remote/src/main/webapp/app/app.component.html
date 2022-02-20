@@ -1,8 +1,31 @@
 <div id="radioberry">
-  <div id="main">
-    <rb-radioberry></rb-radioberry>
 
-    <!--<div (window:resize)="onResize($event)"></div>-->
+  <div id="main">
+
+    <!-- Sidebar -->
+    <div class="w3-sidebar w3-bar-block w3-border-right w3-teal" [ngStyle]="{'display': styleExp}" id="mySidebar">
+      <a (click)="w3_close()" class="w3-bar-item w3-large">Menu</a>
+      <a (click)="navigate('/online')"  class="w3-bar-item w3-button">Radio</a>
+      <a (click)="navigate('/rxset')"  class="w3-bar-item w3-button">RX Settings</a>
+      <a (click)="navigate('/txset')"  class="w3-bar-item w3-button">TX Settings</a>
+      <a  (click)="navigate('/info')" class="w3-bar-item w3-button">Information</a>
+    </div>
+
+    <!-- Page Content -->
+    <div class="w3-teal">
+      <button class="w3-button w3-teal w3-xlarge " (click)="w3_open()">☰</button>
+      <div class="w3-container w3-center">
+        <h1>Remote Transceiver</h1>
+      </div>
+    </div>
+
+    <rb-volume></rb-volume>
+
+    <router-outlet></router-outlet>
+
+    <div class="w3-container w3-teal w3-center">
+      <p>&nbsp;</p>
+    </div>
 
   </div>
 </div>

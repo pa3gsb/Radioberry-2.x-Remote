@@ -12,13 +12,9 @@ import {environment} from '../environments/environment';
 })
 export class AppComponent implements OnInit {
 
-  @HostListener('window:resize', ['$event'])
-  onResize(event) {
-    window.location.reload();
-  }
+  styleExp = "none";
 
-  constructor(private router: Router, private websocket: WebsocketService) {
-  }
+  constructor(private router: Router, private websocket: WebsocketService) {}
 
 
   ngOnInit() {
@@ -51,8 +47,19 @@ export class AppComponent implements OnInit {
         }
         this.websocket.sendWebsocketData(audio);
       });
-
-
     }
+  }
+
+  w3_open() {
+    this.styleExp = "block";
+  }
+
+  w3_close() {
+    this.styleExp = "none";
+  }
+
+  navigate(s: string) {
+    this.w3_close();
+    this.router.navigate([s])
   }
 }

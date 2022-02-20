@@ -21,6 +21,9 @@ import { FrequencystepselectorComponent } from './frequencystepselector/frequenc
 import { MicrophoneComponent } from './microphone/microphone.component';
 import { MeterComponent } from './meter/meter.component';
 import { TuningComponent } from './tuning/tuning.component';
+import { InformationComponent } from './information/information.component';
+import { RxSettingsComponent } from './settings/rx-settings.component';
+import { TxSettingsComponent } from './settings/tx-settings.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +43,10 @@ import { TuningComponent } from './tuning/tuning.component';
     FrequencystepselectorComponent,
     MicrophoneComponent,
     MeterComponent,
-    TuningComponent
+    TuningComponent,
+    InformationComponent,
+    RxSettingsComponent,
+    TxSettingsComponent
   ],
   imports: [
     BrowserModule,
