@@ -11,6 +11,6 @@ public interface IRadio {
 
   void setDSPSettings(DSP dsp);
 
-  void processRadioInputStream(short[] inputStream);
+  void processMicrophoneStream(short[] inputStream);
 
 }

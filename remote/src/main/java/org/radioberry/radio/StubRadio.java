@@ -1,8 +1,5 @@
 package org.radioberry.radio;
 
-import org.openhpsdr.protocol.Protocol1_Processor;
-import org.radioberry.domain.Channel;
-import org.radioberry.domain.Display;
 import org.radioberry.domain.Radio;
 import org.radioberry.radio.websocket.RadioClients;
 import org.radioberry.utility.Configuration;
@@ -19,9 +16,6 @@ public class StubRadio extends AbstractRadio implements Runnable {
 
   @Inject
   RadioClients radioClients;
-
-  @Inject
-  private Protocol1_Processor protocol1Handler; //for stub not required?
 
   @PostConstruct
   public void afterCreate() {
@@ -75,7 +69,6 @@ public class StubRadio extends AbstractRadio implements Runnable {
   public void setRadioSettings(Radio radio) {
 
     setActiveChannel(radio);
-    protocol1Handler.setRadioSettings(radio);
 
     frequency = (int) radio.getFrequency();
     int f1 = frequency - vfo;
@@ -86,6 +79,11 @@ public class StubRadio extends AbstractRadio implements Runnable {
   @Override
   void handleModulatedTxStream(float[] outlsamples, float[] outrsamples) {
     //do nothing..the stub does not handle a tx stream.
+  }
+
+  @Override
+  void handleDeModulatedRxStream(float[] outlsamples, float[] outrsamples) {
+    // no need to do some action; this is a stub; so no actual radio.
   }
 
   private void runStubRadio() {
@@ -110,43 +108,11 @@ public class StubRadio extends AbstractRadio implements Runnable {
       if (actual - required < 0.0) {
 
         generateTone(inlsamples, inrsamples);
-
-        // DSP demodulation
-        wdsp.fexchange2(Channel.RX, inlsamples, inrsamples, outlsamples, outrsamples, error);
-
-        // 48000 samples => 8000 samples ; simple decimation (no filter)
-        for (int j = 0; j < Configuration.buffersize; j++) {
-          if (index % 6 == 0) {
-            audioBuffer[audioIndex++] = outlsamples[j]; //* 32767.0F);
-            if (audioIndex == 2000) {
-              radioClients.audioStream(audioBuffer);
-              audioBuffer = new float[2000];
-              audioIndex = 0;
-            }
-          }
-          index++;
-        }
-        index = index % 6;
-
-       wdsp.Spectrum(Display.RX, 0, 0, convertFloatsToDoubles(inrsamples), convertFloatsToDoubles(inlsamples));
+        for (int i = 0; i < 1024; i ++)  { this.processStreamRxIQ(inlsamples[i], inrsamples[i]); }
 
         actual = actual + 1024;
       }
     }
-  }
-
-  private double[] convertFloatsToDoubles(float[] input)
-  {
-    if (input == null)
-    {
-      return null; // Or throw an exception - your choice
-    }
-    double[] output = new double[input.length];
-    for (int i = 0; i < input.length; i++)
-    {
-      output[i] = input[i];
-    }
-    return output;
   }
 
   private void generateTone(float[] inlsamples, float[] inrsamples) {
@@ -167,5 +133,4 @@ public class StubRadio extends AbstractRadio implements Runnable {
     }
   }
 }
-
 // End of source.

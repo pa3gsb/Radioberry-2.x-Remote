@@ -16,12 +16,14 @@ public class SpectrumStream {
   @Inject
   private RadioClients radioClients;
 
+  TimerTask timerTask;
+
   private Wdsp wdsp = Wdsp.getInstance();
 
   private float[] samples = new float[1280];
 
 	public void setTimer() {
-		TimerTask timerTask = new TimerTask() {
+		timerTask = new TimerTask() {
 
 			@Override
 			public void run() {
@@ -39,4 +41,9 @@ public class SpectrumStream {
 		timer.scheduleAtFixedRate(timerTask, 2000,
 				1000 / Configuration.fps);
 	}
+
+  public void terminate() {
+	  if (null != timerTask) timerTask.cancel();
+  }
+
 }

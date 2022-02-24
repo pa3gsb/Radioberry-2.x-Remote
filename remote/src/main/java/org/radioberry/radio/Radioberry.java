@@ -8,6 +8,7 @@ import org.radioberry.domain.Radio;
 import org.radioberry.utility.Log;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -23,6 +24,15 @@ public class Radioberry extends AbstractRadio implements Discover {
   @PostConstruct
   public void afterCreate() {
     System.out.println("Radioberry bean created");
+    protocol1Handler.setStreamRxIQHandler(this);
+  }
+
+  @PreDestroy
+  public void beforeDestroy() {
+    System.out.println("Radioberry bean will be destroyed.");
+    meterStream.terminate();
+    spectrumStream.terminate();
+    protocol1Handler.terminate();
   }
 
   @Override
@@ -30,7 +40,7 @@ public class Radioberry extends AbstractRadio implements Discover {
     discovered.clear();
     Discovery discovery = new Discovery(this);
     discovery.startDiscovery();
-    if (discovered.size() > 0 ) {
+    if (discovered.size() > 0) {
       protocol1Handler.start(discovered.get(0));
       //spectrumStream.setTimer();
       meterStream.setMeterTimer();
@@ -40,6 +50,7 @@ public class Radioberry extends AbstractRadio implements Discover {
   @Override
   public void setRadioSettings(Radio radio) {
     System.out.println("setRadioSettings" + radio.toString());
+    this.radioDomain = radio;
     setActiveChannel(radio);
     protocol1Handler.setRadioSettings(radio);
   }
@@ -62,5 +73,10 @@ public class Radioberry extends AbstractRadio implements Discover {
       return;
     } else if (discovered.size() == 1) {
     } // 1 gevonden.... dan gaan wij die gebruiken... anders TODO
+  }
+
+  @Override
+  void handleDeModulatedRxStream(float[] outlsamples, float[] outrsamples) {
+    this.protocol1Handler.sendSamples(outlsamples, outrsamples);
   }
 }

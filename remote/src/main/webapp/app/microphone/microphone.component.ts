@@ -57,17 +57,17 @@ export class MicrophoneComponent implements OnInit {
 
         const microphone: Microphone = new Microphone();
         for (let i = 0; i < event.data.inputBuffer.length; i++) {
-          // 48000 samples => 8000 samples ; simple decimation (no filter)
-          if (this.mic_sample_count % 4 == 0) {
+          // 48000 samples => 6000 samples ; simple decimation (no filter)
+          //if (this.mic_sample_count % 8 == 0) {
             let tsd: any = new Number();
             tsd = event.data.inputBuffer[i];
             tsd = 32767.0 * tsd;
             tsd = (tsd << 16) >> 16;
             microphone.mic.push(tsd);
-          }
-          this.mic_sample_count++;
+          //}
+         // this.mic_sample_count++;
         }
-        this.mic_sample_count = this.mic_sample_count % 4;
+        //this.mic_sample_count = this.mic_sample_count % 8;
         this.websocket.sendWebsocketData(microphone);
       };
       return Promise.resolve(this.audioworkletNode);

@@ -1,24 +1,19 @@
 package org.openhpsdr.protocol;
 
 import org.openhpsdr.discovery.Discovered;
-import org.openhpsdr.dsp.Wdsp;
-import org.radioberry.domain.Channel;
-import org.radioberry.domain.Display;
 import org.radioberry.domain.Radio;
+import org.radioberry.radio.IStreamRxIQ;
 import org.radioberry.utility.Configuration;
 import org.radioberry.utility.Log;
-import org.radioberry.radio.websocket.RadioClients;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.*;
 
 @ApplicationScoped
 public class Protocol1_Processor implements Runnable {
 
-  @Inject
-  RadioClients radioClients;
+  private IStreamRxIQ streamRxIQ;
 
   private Discovered useDiscovered;
 
@@ -27,13 +22,9 @@ public class Protocol1_Processor implements Runnable {
   private long frequency = 3630000;
   private int rf_gain = 19;
 
-  int index = 0;
-  int audioIndex = 0;
-  float[] audioBuffer = new float[2000];
+  private final int toport = 1024;
+  private final int myport = 1024;
 
-  private String myaddress = "127.0.0.1";
-  private int toport = 1024;
-  private int myport = 1024;
   private DatagramSocket socket;
 
   private byte rxbuffer[] = new byte[1032];
@@ -58,15 +49,6 @@ public class Protocol1_Processor implements Runnable {
   private DatagramPacket commanddatagram;
   private DatagramPacket samplesdatagram;
 
-  private float[] inlsamples;
-  private float[] inrsamples;
-  private float[] inmiclsamples;
-  private float[] inmicrsamples;
-  private float[] outlsamples;
-  private float[] outrsamples;
-
-  private int inoffset = 0;
-
   private static final int STATE_SYNC0 = 0;
   private static final int STATE_SYNC1 = 1;
   private static final int STATE_SYNC2 = 2;
@@ -87,10 +69,6 @@ public class Protocol1_Processor implements Runnable {
 
   private int state = STATE_SYNC0;
 
-  private int[] error = new int[1];
-
-  private int[] success = new int[1];
-
   private int command = 0;
   private int freqcommand = 0;
 
@@ -99,21 +77,20 @@ public class Protocol1_Processor implements Runnable {
 
   private int isample;
   private int qsample;
-  private int msample;
 
   private byte[] audiooutput = new byte[1024 * 4]; // 2 channels of shorts
   private int audiooutputindex = 0;
 
-  // control 0
   public static byte MOX_DISABLED = (byte) 0x00;
   public static byte MOX_ENABLED = (byte) 0x01;
 
-  // default tx control bytes
   private byte txcontrol0 = (byte) (MOX_DISABLED);
 
   private long txsequence = 0L;
 
-  Wdsp wdsp = Wdsp.getInstance();
+  public void setStreamRxIQHandler(IStreamRxIQ streamRxIQ) {
+    this.streamRxIQ = streamRxIQ;
+  }
 
   public void start(Discovered useThisDiscovered) {
     useDiscovered = useThisDiscovered;
@@ -142,16 +119,6 @@ public class Protocol1_Processor implements Runnable {
     return running;
   }
 
-  public Protocol1_Processor() {
-    // allocate space for the input/output samples
-    inlsamples = new float[Configuration.buffersize];
-    inrsamples = new float[Configuration.buffersize];
-    inmiclsamples = new float[Configuration.buffersize];
-    inmicrsamples = new float[Configuration.buffersize];
-    outlsamples = new float[Configuration.buffersize];
-    outrsamples = new float[Configuration.buffersize];
-  }
-
   @Override
   public void run() {
 
@@ -159,14 +126,12 @@ public class Protocol1_Processor implements Runnable {
     long sequence;
     int endpoint;
 
-    // build the toaddress InetAddress
     try {
       toaddress = InetAddress.getByName(useDiscovered.getAddress());
     } catch (Exception e) {
       Log.info("Protocol1", "constructor: " + e.toString());
     }
 
-    // create the DatagramPackets for commands and samples
     commanddatagram = new DatagramPacket(commandbuffer, commandbuffer.length, toaddress, toport);
     samplesdatagram = new DatagramPacket(sendbuffer, sendbuffer.length, toaddress, toport);
 
@@ -228,8 +193,8 @@ public class Protocol1_Processor implements Runnable {
     }
     sendCommand();
     socket.close();
-    wdsp.DestroyAnalyzer(Display.RX);
-    wdsp.DestroyAnalyzer(Display.TX);
+
+    System.out.println("Protocol1 Processor is stopped; only when stopping the service.");
   }
 
   private synchronized void sendStartRadio() {
@@ -246,21 +211,6 @@ public class Protocol1_Processor implements Runnable {
   private void demuxBuffer(byte[] bytes, int offset) {
 
     if (running) {
-
-      // 512 byte buffer (startig at offset)
-      //    0: SYNC
-      //    1: SYNC
-      //    2: SYNC
-      //    3: Control 0
-      //    4: Control 1
-      //    5: Control 2
-      //    6: Control 3
-      //    7: Control 4
-
-      //    8,9,10:   I   for 1 receiver  |
-      //    11,12,13: Q   for 1 receiver  |  repeated 63 times from 1 receiver
-      //    14,15:    MIC                 |
-
       state = STATE_SYNC0;
       for (int i = offset; i < offset + 512; i++) {
         switch (state) {
@@ -333,41 +283,10 @@ public class Protocol1_Processor implements Runnable {
             state++;
             break;
           case STATE_M0:
-            msample = bytes[i] << 8; // keep sign ????
             state++;
             break;
           case STATE_M1:
-            msample |= bytes[i] & 0xFF;
-            // we now have an I, Q and Microphone sample
-            inlsamples[inoffset] = (float) isample / 8388607.0F; // 24 bit sample convert to -1..+1
-            inrsamples[inoffset] = (float) qsample / 8388607.0F; // 24 bit sample convert to -1..+1
-            inmiclsamples[inoffset] = 0.0F; //(float) msample / 32767.0F * Configuration.micgain; // 16 bit sample convert to -1..+1
-            inmicrsamples[inoffset] = 0.0F;
-            inoffset++;
-            if (inoffset == Configuration.buffersize) {
-              if (transmit) {
-                // transmit via websocket.
-              } else {
-                wdsp.fexchange2(Channel.RX, inlsamples, inrsamples, outlsamples, outrsamples, error);
-                // 48000 samples => 8000 samples ; simple decimation (no filter)
-                for (int j = 0; j < Configuration.buffersize; j++) {
-                  if (index % 6 == 0) {
-                    audioBuffer[audioIndex++] = outlsamples[j];
-                    if (audioIndex == 2000) {
-                      radioClients.audioStream(audioBuffer);
-                      audioBuffer = new float[2000];
-                      audioIndex = 0;
-                    }
-                  }
-                  index++;
-                }
-                index = index % 6;
-                wdsp.Spectrum(Display.RX, 0, 0, convertFloatsToDoubles(inrsamples), convertFloatsToDoubles(inlsamples));
-
-                sendSamples(outlsamples, outrsamples);
-              }
-              inoffset = 0;
-            }
+            this.streamRxIQ.processStreamRxIQ((float) isample / 8388607.0F, (float) qsample / 8388607.0F );
             state = STATE_I0;
             break;
           case STATE_SYNC_ERROR:
@@ -375,17 +294,6 @@ public class Protocol1_Processor implements Runnable {
         }
       }
     }
-  }
-
-  private double[] convertFloatsToDoubles(float[] input) {
-    if (input == null) {
-      return null; // Or throw an exception - your choice
-    }
-    double[] output = new double[input.length];
-    for (int i = 0; i < input.length; i++) {
-      output[i] = input[i];
-    }
-    return output;
   }
 
   public synchronized void sendCommand() {
@@ -403,7 +311,10 @@ public class Protocol1_Processor implements Runnable {
   public synchronized void sendSamples(float[] outlsamples, float[] outrsamples) {
     float rfgain = 1.0F;
 
+    if (!running) return;
+
     for (int j = 0; j < outlsamples.length; j++) {
+
       if (transmit) {
         sendbuffer[txoffset++] = (byte) 0; // rx
         sendbuffer[txoffset++] = (byte) 0; // rx
@@ -429,21 +340,16 @@ public class Protocol1_Processor implements Runnable {
       }
 
       if (txoffset == 520) {
-        // first OZY buffer filled
         txoffset = 528;
       } else if (txoffset == 1032) {
-        // second OZY buffer filled
-        // put in the header
         sendbuffer[0] = (byte) 0xEF;
         sendbuffer[1] = (byte) 0xFE;
         sendbuffer[2] = (byte) 0x01;
-        sendbuffer[3] = (byte) 0x02;  // to EP2
-        // put in the tx sequence number
+        sendbuffer[3] = (byte) 0x02;
         sendbuffer[4] = (byte) ((txsequence >> 24) & 0xFF);
         sendbuffer[5] = (byte) ((txsequence >> 16) & 0xFF);
         sendbuffer[6] = (byte) ((txsequence >> 8) & 0xFF);
         sendbuffer[7] = (byte) (txsequence & 0xFF);
-        // put in the OZY control bytes
         sendbuffer[8] = SYNC;
         sendbuffer[9] = SYNC;
         sendbuffer[10] = SYNC;
@@ -550,7 +456,6 @@ public class Protocol1_Processor implements Runnable {
       }
     }
   }
-
 
   private byte getFilter() {
     byte filter = (byte) 2; /* 160 meters */

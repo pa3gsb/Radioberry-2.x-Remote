@@ -2,15 +2,16 @@ package org.radioberry.radio;
 
 import org.openhpsdr.dsp.Wdsp;
 import org.radioberry.domain.*;
+import org.radioberry.radio.websocket.RadioClients;
 import org.radioberry.service.audio.LocalAudio;
 import org.radioberry.utility.Configuration;
 import org.radioberry.utility.Log;
+import org.radioberry.utility.RingBuffer;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.util.Date;
 
-public abstract class AbstractRadio implements IRadio {
+public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
 
   @Inject
   SpectrumStream spectrumStream;
@@ -21,9 +22,17 @@ public abstract class AbstractRadio implements IRadio {
   @Inject
   private LocalAudio localAudio;
 
+  @Inject
+  RadioClients radioClients;
+
+  Radio radioDomain;
+
+  private RingBuffer<Integer> micSampleRingbuffer = new RingBuffer(9600); //1200 (0.2)
+
   Wdsp wdsp = Wdsp.getInstance();
 
   public AbstractRadio() {
+    radioDomain = new Radio();
     handleWisdom();
     setupReceiver();
     setupTransmitter();
@@ -38,7 +47,7 @@ public abstract class AbstractRadio implements IRadio {
       bits = "x64";
     }
     String wdspPath = File.separator + ".radioberry" + File.separator + bits + File.separator;
-    String wisdomDirectory=System.getProperty("user.home") + wdspPath;
+    String wisdomDirectory = System.getProperty("user.home") + wdspPath;
     File file = new File(wisdomDirectory);
     file.mkdirs();
 
@@ -86,22 +95,38 @@ public abstract class AbstractRadio implements IRadio {
       (int) Configuration.tx_samplerate, (int) Configuration.dsprate, 48000,
       1/*tx*/, 0/*NOT RUNNING*/, 0.010, 0.025, 0.0, 0.010, 0);
     wdsp.TXASetNC(Channel.TX, 1024);
-    wdsp.SetTXAPanelRun(Channel.TX,1);
+    wdsp.SetTXAPanelRun(Channel.TX, 1);
     wdsp.SetTXAPanelGain1(Channel.TX, 5.0);
     wdsp.SetTXAMode(Channel.TX, Settings.LSB);
     wdsp.SetTXABandpassFreqs(Channel.TX, Settings.filterLow[Settings.LSB], Settings.filterHigh[Settings.LSB]);
     wdsp.SetTXAEQRun(Channel.TX, 1);
-    wdsp.SetTXAEQWintype (Channel.TX, 0);
-    // equalizer values; i do send 6000 Hz ...
+    wdsp.SetTXAEQWintype(Channel.TX, 0);
+    // equalizer values; i do send 6000 Hz samples / sec
     // without the equalizer...there is to much low in the spectrum... fixed setup.
     double[] freqs = new double[11];
     double[] gains = new double[11];
     freqs[0] = 0.0;
-    freqs[1] = 32.0; freqs[2] = 63.0; freqs[3] = 125.0; freqs[4] = 250.0; freqs[5] = 500.0;
-    freqs[6] = 1000.0; freqs[7] = 2000.0; freqs[8] = 4000.0; freqs[9] = 8000.0; freqs[10] = 16000.0;
+    freqs[1] = 32.0;
+    freqs[2] = 63.0;
+    freqs[3] = 125.0;
+    freqs[4] = 250.0;
+    freqs[5] = 500.0;
+    freqs[6] = 1000.0;
+    freqs[7] = 2000.0;
+    freqs[8] = 4000.0;
+    freqs[9] = 8000.0;
+    freqs[10] = 16000.0;
     gains[0] = 0.0;
-    gains[1] = -4.0; gains[2] = -3.0; gains[3] = -2.0; gains[4] = 0.0; gains[5] = 7.0;
-    gains[6] = 12.0; gains[7] = 12.0; gains[8] = 12.0; gains[9] = 12.0; gains[10] = 12.0;
+    gains[1] = -4.0;
+    gains[2] = -3.0;
+    gains[3] = -2.0;
+    gains[4] = 0.0;
+    gains[5] = 7.0;
+    gains[6] = 12.0;
+    gains[7] = 12.0;
+    gains[8] = 12.0;
+    gains[9] = 12.0;
+    gains[10] = 12.0;
     wdsp.SetTXAEQProfile(Channel.TX, 10, freqs, gains);
   }
 
@@ -199,50 +224,156 @@ public abstract class AbstractRadio implements IRadio {
   private float[] outlsamples;
   private float[] outrsamples;
 
+  private float[] outrxlsamples;
+  private float[] outrxrsamples;
+
   private byte[] audiooutput = new byte[1024 * 4];
   private int audiooutputindex = 0;
 
   void setupMicrophoneStream() {
     inlsamples = new float[Configuration.buffersize];
     inrsamples = new float[Configuration.buffersize];
-    outlsamples = new float[Configuration.buffersize * 4];
-    outrsamples = new float[Configuration.buffersize * 4];
+    outrxlsamples = new float[Configuration.buffersize];
+    outrxrsamples = new float[Configuration.buffersize];
+    outlsamples = new float[Configuration.buffersize];// * 8 if upsampling
+    outrsamples = new float[Configuration.buffersize];// * 8 if upsampling
 
     index = 0;
   }
 
+//  long time1 = 0;
+//  long time2 = 0;
+//  long count = 0;
+
   @Override
-  public void processRadioInputStream(short[] inputStream) {
+  public void processMicrophoneStream(short[] inputStream) {
+
+//    count = count + inputStream.length;
+//    if (count >= 6000) {
+//      time2 = System.currentTimeMillis();
+//      System.out.println("time for  " + count + "  samples = " + Long.valueOf(time2 - time1).toString());
+//      time1 = System.currentTimeMillis();
+//      count = 0;
+//    }
 
     for (int i = 0; i < inputStream.length; i++) {
-
-//      // for testing ; see if audio from remote device is audible.
-//      short lsample = (short) inputStream[i];
-//      short rsample = (short) inputStream[i];
-//      audiooutput[audiooutputindex++] = (byte) ((lsample >> 8) & 0xFF);
-//      audiooutput[audiooutputindex++] = (byte) (lsample & 0xFF);
-//      audiooutput[audiooutputindex++] = (byte) ((rsample >> 8) & 0xFF);
-//      audiooutput[audiooutputindex++] = (byte) (rsample & 0xFF);
-//      if (audiooutputindex == audiooutput.length) {
-//        //localAudio.writeAudio(audiooutput);  // listening local.
-//        audiooutputindex = 0;
-//      }
-
-      // execute the modulation before further processing
-      inlsamples[index] = (float) inputStream[i] / 32767.0F * Configuration.micgain; // convert 16 bit samples to -1.0 .. +1.0
-      inrsamples[index++] = (float) inputStream[i] / 32767.0F * Configuration.micgain;
-      if (index == inlsamples.length) {
-        int[] error = new int[1];
-        wdsp.fexchange2(Channel.TX, inlsamples, inrsamples, outlsamples, outrsamples, error);
-        if (error[0] != 0) {
-          Log.info("processRadioInputStream", "fexchange2 returned " + error[0]);
+      if (micSampleRingbuffer.size() < micSampleRingbuffer.capacity()) {
+        try {
+          micSampleRingbuffer.add(Integer.valueOf(inputStream[i]));
+        } catch (InterruptedException ex) {
         }
-        handleModulatedTxStream(outlsamples, outrsamples);
-        index = 0;
-      }
+      } else System.out.println("mic sample not added");
     }
+  }
+
+  //    countiq++;
+//    if (countiq >= 48000) {
+  long counttx = 0;
+  long notadded = 0;
+
+  int txIndex = 0;
+
+  private void processStreamTX() {
+
+
+    //if (txIndex % 8 == 0) {
+
+    //  txIndex = 0;
+
+    Integer micSample = 0;
+    if (micSampleRingbuffer.size() > 0) {
+      try {
+        micSample = micSampleRingbuffer.remove();
+      } catch (InterruptedException ex) {
+      }
+    } else notadded++;
+
+    counttx++;
+    if (counttx >= 48000) {
+      System.out.println("#" + notadded + " mic samples not in buffer; adding silence for 48000 samples");
+      notadded = 0;
+      counttx = 0;
+    }
+
+    inlsamples[index] = (float) micSample / 32767.0F * Configuration.micgain; // convert 16 bit samples to -1.0 .. +1.0
+    inrsamples[index] = (float) micSample / 32767.0F * Configuration.micgain;
+    index++;
+    if (index == inlsamples.length) {
+      int[] error = new int[1];
+      wdsp.fexchange2(Channel.TX, inlsamples, inrsamples, outlsamples, outrsamples, error);
+      if (error[0] != 0) {
+        Log.info("processStreamTX", "fexchange2 returned " + error[0]);
+      }
+
+      handleModulatedTxStream(outlsamples, outrsamples);
+      index = 0;
+    }
+    // }
+
+    //txIndex++;
   }
 
   abstract void handleModulatedTxStream(float[] outlsamples, float[] outrsamples);
 
+  private final float[] sampleI = new float[Configuration.buffersize];
+  private final float[] sampleQ = new float[Configuration.buffersize];
+  private Integer iqOffset = 0;
+
+  int rxIndex = 0;
+  int audioIndex = 0;
+
+  float[] audioBuffer = new float[2000];
+
+
+//  long timeiq1 = 0;
+//  long timeiq2 = 0;
+//  long countiq = 0;
+
+
+  @Override
+  public void processStreamRxIQ(float sampleI, float sampleQ) {
+
+//    countiq++;
+//    if (countiq >= 48000) {
+//      timeiq2 = System.currentTimeMillis();
+//      System.out.println("IQ timing  " + countiq + "  samples = " + Long.valueOf(timeiq2 - timeiq1).toString());
+//      timeiq1 = System.currentTimeMillis();
+//      countiq = 0;
+//    }
+
+    int[] error = new int[1];
+
+    this.sampleI[iqOffset] = sampleI;
+    this.sampleQ[iqOffset] = sampleQ;
+
+    if (radioDomain.isReceive()) {
+      iqOffset++;
+      if (iqOffset == Configuration.buffersize) {
+
+        wdsp.fexchange2(Channel.RX, this.sampleI, this.sampleQ, outrxlsamples, outrxrsamples, error);
+
+        // 48000 samples => 8000 samples ; simple decimation (no filter)
+        for (int j = 0; j < Configuration.buffersize; j++) {
+          if (rxIndex % 6 == 0) {
+            audioBuffer[audioIndex++] = outrxlsamples[j];
+            if (audioIndex == 2000) {
+              radioClients.audioStream(audioBuffer);
+              audioBuffer = new float[2000];
+              audioIndex = 0;
+            }
+          }
+          rxIndex++;
+        }
+        rxIndex = rxIndex % 6;
+
+        iqOffset = 0;
+
+        handleDeModulatedRxStream(outrxlsamples, outrxrsamples);
+      }
+    } else {
+      processStreamTX();
+    }
+  }
+
+  abstract void handleDeModulatedRxStream(float[] outlsamples, float[] outrsamples);
 }

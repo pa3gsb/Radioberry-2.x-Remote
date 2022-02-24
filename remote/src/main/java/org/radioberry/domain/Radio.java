@@ -44,6 +44,10 @@ public class Radio {
     return transmit;
   }
 
+  public boolean isReceive() {
+    return !transmit;
+  }
+
   public void setTransmit(boolean transmit) {
     this.transmit = transmit;
   }

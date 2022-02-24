@@ -28,7 +28,7 @@ public class RadioWebsocketHandler {
 
   @OnMessage
   public void onMessage(Session session, Message message) throws IOException {
-    radio.getRadio().processRadioInputStream(message.getMic());
+    radio.getRadio().processMicrophoneStream(message.getMic());
   }
 
   @OnClose

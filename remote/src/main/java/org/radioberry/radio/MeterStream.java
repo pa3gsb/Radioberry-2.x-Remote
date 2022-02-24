@@ -17,9 +17,11 @@ public class MeterStream {
 
   private Wdsp wdsp = Wdsp.getInstance();
 
+  TimerTask timerTask;
+
   public void setMeterTimer() {
 
-    TimerTask timerTask = new TimerTask() {
+    timerTask = new TimerTask() {
 
       @Override
       public void run() {
@@ -33,5 +35,9 @@ public class MeterStream {
     Timer timer = new Timer("S-Meter Timer");
 
     timer.scheduleAtFixedRate(timerTask, 2000,1000);
+  }
+
+  public void terminate() {
+    if (null != timerTask) timerTask.cancel();
   }
 }
