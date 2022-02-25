@@ -27,7 +27,7 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
 
   Radio radioDomain;
 
-  private RingBuffer<Integer> micSampleRingbuffer = new RingBuffer(9600); //1200 (0.2)
+  private RingBuffer<Integer> micSampleRingbuffer = new RingBuffer(9600);
 
   Wdsp wdsp = Wdsp.getInstance();
 
@@ -41,7 +41,6 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
   }
 
   private void handleWisdom() {
-    // need to check if wisdom file differs???
     String bits = "x86";
     if (System.getProperty("os.arch") != null && System.getProperty("os.arch").endsWith("64")) {
       bits = "x64";
@@ -216,7 +215,6 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
     );
   }
 
-  // radio input stream.
   private float[] inlsamples;
   private float[] inrsamples;
   private int index = 0;
@@ -235,64 +233,63 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
     inrsamples = new float[Configuration.buffersize];
     outrxlsamples = new float[Configuration.buffersize];
     outrxrsamples = new float[Configuration.buffersize];
-    outlsamples = new float[Configuration.buffersize];// * 8 if upsampling
-    outrsamples = new float[Configuration.buffersize];// * 8 if upsampling
+    outlsamples = new float[Configuration.buffersize];// * ? if upsampling
+    outrsamples = new float[Configuration.buffersize];// * ? if upsampling
 
     index = 0;
   }
 
-//  long time1 = 0;
-//  long time2 = 0;
-//  long count = 0;
+  long countMicSamples = 0;
+  long overflowCount = 0;
 
   @Override
   public void processMicrophoneStream(short[] inputStream) {
 
-//    count = count + inputStream.length;
-//    if (count >= 6000) {
-//      time2 = System.currentTimeMillis();
-//      System.out.println("time for  " + count + "  samples = " + Long.valueOf(time2 - time1).toString());
-//      time1 = System.currentTimeMillis();
-//      count = 0;
-//    }
-
     for (int i = 0; i < inputStream.length; i++) {
+
+      countMicSamples++;
+
       if (micSampleRingbuffer.size() < micSampleRingbuffer.capacity()) {
         try {
           micSampleRingbuffer.add(Integer.valueOf(inputStream[i]));
         } catch (InterruptedException ex) {
         }
-      } else System.out.println("mic sample not added");
+      } else  overflowCount++;
+    }
+    // check and print overflow situations; nice for analyse setup problems.
+    // overflow happens in the microphone stream; placing the mic samples in the ringbuffer, before processing
+    // in the modulation stream (where an underflow situation can occur).
+    if (countMicSamples >= 48000) {
+      if (overflowCount > 0) {
+        System.out.println("Overflow Count # " + overflowCount + " processing ~48000 mic samples; mic sampel removed");
+      }
+      overflowCount = 0;
+      countMicSamples = 0;
     }
   }
 
-  //    countiq++;
-//    if (countiq >= 48000) {
-  long counttx = 0;
-  long notadded = 0;
-
-  int txIndex = 0;
+  long countTxSamples = 0;
+  long underflowCount = 0;
 
   private void processStreamTX() {
-
-
-    //if (txIndex % 8 == 0) {
-
-    //  txIndex = 0;
-
     Integer micSample = 0;
+
     if (micSampleRingbuffer.size() > 0) {
       try {
         micSample = micSampleRingbuffer.remove();
       } catch (InterruptedException ex) {
       }
-    } else notadded++;
+    } else underflowCount++;
 
-    counttx++;
-    if (counttx >= 48000) {
-      System.out.println("#" + notadded + " mic samples not in buffer; adding silence for 48000 samples");
-      notadded = 0;
-      counttx = 0;
+    // check and print underflow situations; nice for analyse setup problems.
+    // underflow happens in the modulation stream; bringing the mic samples to the modulator.
+    countTxSamples++;
+    if (countTxSamples >= 48000) {
+      if (underflowCount > 0) {
+        System.out.println("Underflow Count # " + underflowCount + " processing 48000 tx samples; added silence");
+      }
+      underflowCount = 0;
+      countTxSamples = 0;
     }
 
     inlsamples[index] = (float) micSample / 32767.0F * Configuration.micgain; // convert 16 bit samples to -1.0 .. +1.0
@@ -308,9 +305,6 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
       handleModulatedTxStream(outlsamples, outrsamples);
       index = 0;
     }
-    // }
-
-    //txIndex++;
   }
 
   abstract void handleModulatedTxStream(float[] outlsamples, float[] outrsamples);
@@ -324,22 +318,8 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
 
   float[] audioBuffer = new float[2000];
 
-
-//  long timeiq1 = 0;
-//  long timeiq2 = 0;
-//  long countiq = 0;
-
-
   @Override
   public void processStreamRxIQ(float sampleI, float sampleQ) {
-
-//    countiq++;
-//    if (countiq >= 48000) {
-//      timeiq2 = System.currentTimeMillis();
-//      System.out.println("IQ timing  " + countiq + "  samples = " + Long.valueOf(timeiq2 - timeiq1).toString());
-//      timeiq1 = System.currentTimeMillis();
-//      countiq = 0;
-//    }
 
     int[] error = new int[1];
 

@@ -34,8 +34,12 @@ public class RadioWebsocketHandler {
   @OnClose
   public void onClose(Session session) throws IOException {
     // WebSocket connection closes
-    radioClients.removeRadioClient(this);
-    this.session = null;
+    try {
+      radioClients.removeRadioClient(this);
+      this.session = null;
+    } catch (Exception ex) {
+      System.out.println("websocket close problem. sweep under the carpet!");
+    }
   }
 
   @OnError
@@ -49,7 +53,7 @@ public class RadioWebsocketHandler {
         this.session.getBasicRemote().sendObject(message);
       }
     } catch (IOException | EncodeException e) {
-      System.out.println("websocket send message problem...\n");
+      System.out.println("websocket send message problem.");
       e.printStackTrace();
     }
   }

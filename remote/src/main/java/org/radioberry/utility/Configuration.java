@@ -6,10 +6,9 @@ public class Configuration {
   public final static int fps = 10;
 
   public final static double samplerate = 48000.0;
-  public final static double tx_samplerate = 48000.0; //6000.0; //12000.0;
+  public final static double tx_samplerate = 48000.0;
   public final static double dsprate = 48000.0;
   public final static int buffersize = 1024;
-  //public final static int fftsize = 4096;
   public static final int fftsize = 1024;
 
   public final static boolean NB2 = false;
