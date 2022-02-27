@@ -115,17 +115,17 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
     freqs[8] = 4000.0;
     freqs[9] = 8000.0;
     freqs[10] = 16000.0;
-    gains[0] = 0.0;
-    gains[1] = -4.0;
+    gains[0] = 3.0;
+    gains[1] = -5.0;
     gains[2] = -3.0;
     gains[3] = -2.0;
     gains[4] = 0.0;
-    gains[5] = 7.0;
-    gains[6] = 12.0;
-    gains[7] = 12.0;
-    gains[8] = 12.0;
-    gains[9] = 12.0;
-    gains[10] = 12.0;
+    gains[5] = 8.0;
+    gains[6] = 13.0;
+    gains[7] = 13.0;
+    gains[8] = 13.0;
+    gains[9] = 15.0;
+    gains[10] = 15.0;
     wdsp.SetTXAEQProfile(Channel.TX, 10, freqs, gains);
   }
 

@@ -23,7 +23,7 @@ public class Protocol1_Processor implements Runnable {
   private int rf_gain = 19;
 
   private final int toport = 1024;
-  private final int myport = 1024;
+  private final int myport = 0;
 
   private DatagramSocket socket;
 

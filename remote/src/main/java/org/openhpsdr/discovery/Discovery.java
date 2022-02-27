@@ -183,7 +183,7 @@ public class Discovery {
 
     private boolean running;
     private DatagramSocket socket;
-    private int myport = 1024;
+    private int myport = 0;
     private int toport = 1024;
     private String toaddress = "255.255.255.255";
 
