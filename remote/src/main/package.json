@@ -1,11 +1,13 @@
 {
   "name": "radioberry",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "scripts": {
     "ng": "ng",
     "watch": "ng build --watch --configuration development",
     "start": "ng serve --host 0.0.0.0 --port 4200 --disable-host-check",
+    "prebuild": "npm --no-git-tag-version version patch",
     "build": "ng build",
+    "prebuildprod": "npm --no-git-tag-version version patch",
     "buildprod": "ng build --configuration production --base-href /remote/ --deploy-url /remote/",
     "test": "ng test",
     "lint": "ng lint",

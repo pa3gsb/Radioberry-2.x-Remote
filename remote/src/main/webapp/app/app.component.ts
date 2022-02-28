@@ -4,6 +4,7 @@ import {Router} from '@angular/router';
 import {Audio, Spectrum} from './model/radio';
 import {interval} from 'rxjs';
 import {environment} from '../environments/environment';
+import packageJson from '../../package.json';
 
 @Component({
   selector: 'rb-root',
@@ -13,6 +14,8 @@ import {environment} from '../environments/environment';
 export class AppComponent implements OnInit {
 
   styleExp = "none";
+
+  public version: string = packageJson.version;
 
   constructor(private router: Router, private websocket: WebsocketService) {}
 

@@ -4,6 +4,8 @@
     "paths": {
       "tslib" : ["node_modules/tslib/tslib.d.ts"]
     },
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
