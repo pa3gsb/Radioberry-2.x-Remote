@@ -12,6 +12,7 @@ export class VolumeComponent implements OnInit{
 
   @Input() startknop = "block";
 
+  private audioStarted: boolean = false;
   private audioOn: number = 0;
   private player: any;
 
@@ -29,7 +30,7 @@ export class VolumeComponent implements OnInit{
 
     radiocontrolService.radioUpdate.subscribe(
       (radio :Radio) => {
-        this.audioOn = radio.transmit ? 0: 1;
+        if (this.audioStarted) this.audioOn = radio.transmit ? 0: 1;
       });
   }
 
@@ -55,5 +56,7 @@ export class VolumeComponent implements OnInit{
       this.player.volume(60); // volume set by device
       this.audioOn = 1;
     }
+
+    this.audioStarted = true;
   }
 }
