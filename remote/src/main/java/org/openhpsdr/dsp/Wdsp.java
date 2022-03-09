@@ -32,6 +32,8 @@ public class Wdsp {
 
     if(System.getProperty("os.name").startsWith("Windows")) {
 
+      System.out.println("JVM runs on Windows");
+
       String libraryPath = "";
 
       if (System.getProperty("os.arch") != null && System.getProperty("os.arch").endsWith("64")) {
@@ -43,9 +45,13 @@ public class Wdsp {
       }
       System.load(libraryPath + File.separator + "libfftw3-3.dll");
       System.load(libraryPath+File.separator+"wdsp.dll");
+
+      System.out.println("Libraries loaded");
     }
 
     if(System.getProperty("os.name").startsWith("Linux")) {
+
+      System.out.println("JVM runs on Linux");
 
       URL resource = Wdsp.class.getClassLoader().getResource("linux");
       String libraryPath = resource.getPath();
