@@ -62,7 +62,7 @@ sudo cp server.xml /home/pi/server/apache-tomee-webprofile-8.0.10/conf
 sudo cp remote.war /home/pi/server/apache-tomee-webprofile-8.0.10/webapps
 
 echo ""
-echo "Server setup finished. Now start the server; use start_remote.sh"
+echo "Server setup finished. Now start the server; use start_remote.sh (switch to su user)"
 echo "" 
 echo "" 
 echo "Have fun" 
