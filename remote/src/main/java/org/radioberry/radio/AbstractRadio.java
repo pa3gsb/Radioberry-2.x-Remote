@@ -242,23 +242,65 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
   long countMicSamples = 0;
   long overflowCount = 0;
 
+  /**
+   * Nice detail used https://chat.openai.com/chat
+   *
+   * In this method, the input audio data is upsampled by inserting 5 interpolated
+   * samples between each pair of samples in the input array.
+   * The interpolated samples are calculated by taking the average of the
+   * two adjacent samples in the input array. This will effectively increase the
+   * sampling rate from 8 kHz to 48 kHz, and should also improve the audio quality
+   * of the output audio data compared to simply inserting zeros.
+   *
+   * Keep in mind that this is just one example of how to upsample audio data
+   * using linear interpolation. There are many other interpolation methods that
+   * can be used, and the specific method that is best for a given application will
+   * depend on the desired trade-off between computational complexity and audio quality.
+   * Experiment with different interpolation methods to find the best balance for
+   * your specific application.
+   *
+   * @param inputStream
+   * @return
+   */
+  public short[] upSampleMicrophoneStream(short[] inputStream) {
+    // create an array to hold the upsampled audio data
+    short[] outputStream = new short[inputStream.length * 6];
+    // upsample the input audio data using linear interpolation
+    for (int i = 0; i < inputStream.length - 1; i++) {
+      outputStream[i * 6] = inputStream[i];
+      short interpolatedSample = (short)((inputStream[i] + inputStream[i + 1]) / 2);
+      outputStream[i * 6 + 1] = interpolatedSample;
+      outputStream[i * 6 + 2] = interpolatedSample;
+      outputStream[i * 6 + 3] = interpolatedSample;
+      outputStream[i * 6 + 4] = interpolatedSample;
+      outputStream[i * 6 + 5] = interpolatedSample;
+    }
+    // handle the last sample separately
+    outputStream[(inputStream.length - 1) * 6] = inputStream[inputStream.length - 1];
+    return outputStream;
+  }
+
   @Override
   public void processMicrophoneStream(short[] inputStream) {
 
-    for (int i = 0; i < inputStream.length; i++) {
+    short[] upSampleStream = new short[inputStream.length * 6];
+    upSampleStream = upSampleMicrophoneStream(inputStream);
+
+    for (int i = 0; i < upSampleStream.length; i++) {
 
       countMicSamples++;
 
       if (micSampleRingbuffer.size() < micSampleRingbuffer.capacity()) {
         try {
-          micSampleRingbuffer.add(Integer.valueOf(inputStream[i]));
+          micSampleRingbuffer.add(Integer.valueOf(upSampleStream[i]));
         } catch (InterruptedException ex) {
         }
       } else  overflowCount++;
     }
+
     // check and print overflow situations; nice for analyse setup problems.
-    // overflow happens in the microphone stream; placing the mic samples in the ringbuffer, before processing
-    // in the modulation stream (where an underflow situation can occur).
+    // overflow happens in the microphone stream; placing the mic samples in the ringbuffer,
+    // before processing in the modulation stream (where an underflow situation can occur).
     if (countMicSamples >= 48000) {
       if (overflowCount > 0) {
         System.out.println("Overflow Count # " + overflowCount + " processing ~48000 mic samples; mic sampel removed");

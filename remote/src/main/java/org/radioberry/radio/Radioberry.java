@@ -41,6 +41,7 @@ public class Radioberry extends AbstractRadio implements Discover {
     Discovery discovery = new Discovery(this);
     discovery.startDiscovery();
     if (discovered.size() > 0) {
+      Log.info("Radioberry", "starting using this radio: " + discovered.get(0).toString());
       protocol1Handler.start(discovered.get(0));
       //spectrumStream.setTimer();
       meterStream.setMeterTimer();

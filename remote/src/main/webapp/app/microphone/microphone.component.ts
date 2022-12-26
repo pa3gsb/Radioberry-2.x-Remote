@@ -12,7 +12,7 @@ export class MicrophoneComponent implements OnInit {
 
   transmit: boolean = false;
 
-  private mic_sample_count: number = 0;
+  private decimationCount: number = 0;
 
   private audioSource: MediaStreamAudioSourceNode;
   private audioAnalyser?: AnalyserNode;
@@ -56,23 +56,35 @@ export class MicrophoneComponent implements OnInit {
         if (event.data.level !== undefined) MicrophoneComponent.displayMicLevel(event.data.level);
 
         const microphone: Microphone = new Microphone();
+        // create a low-pass filter with a cutoff frequency of 16 kHz
+        const lowPassFilter = audioContext.createBiquadFilter();
+        lowPassFilter.type = 'lowpass';
+        lowPassFilter.frequency.value = 8000;
         for (let i = 0; i < event.data.inputBuffer.length; i++) {
-          // 48000 samples => 6000 samples ; simple decimation (no filter)
-          //if (this.mic_sample_count % 8 == 0) {
+          // create an array to hold the input audio sample
+          const inputSampleArray = new Float32Array([event.data.inputBuffer[i]]);
+          // create an array to hold the output audio sample
+          const outputSampleArray = new Float32Array();
+          // create an array to hold the output phase response
+          const phaseResponseArray = new Float32Array();
+          // calculate the frequency response of the filter at the input frequency
+          lowPassFilter.getFrequencyResponse(inputSampleArray, outputSampleArray, phaseResponseArray);
+          // decimate the filtered audio data by only keeping every 8th sample
+          if (this.decimationCount % 8 == 0) {
             let tsd: any = new Number();
-            tsd = event.data.inputBuffer[i];
+            tsd = outputSampleArray[0];
             tsd = 32767.0 * tsd;
             tsd = (tsd << 16) >> 16;
             microphone.mic.push(tsd);
-          //}
-         // this.mic_sample_count++;
+          }
+          this.decimationCount++;
         }
-        //this.mic_sample_count = this.mic_sample_count % 8;
         this.websocket.sendWebsocketData(microphone);
       };
       return Promise.resolve(this.audioworkletNode);
     });
   }
+
 
   stopMicStream(): void {
     this.audioSource.disconnect();
