@@ -64,9 +64,9 @@ export class MicrophoneComponent implements OnInit {
           // create an array to hold the input audio sample
           const inputSampleArray = new Float32Array([event.data.inputBuffer[i]]);
           // create an array to hold the output audio sample
-          const outputSampleArray = new Float32Array();
+          const outputSampleArray = new Float32Array(event.data.inputBuffer.length);
           // create an array to hold the output phase response
-          const phaseResponseArray = new Float32Array();
+          const phaseResponseArray = new Float32Array(event.data.inputBuffer.length);
           // calculate the frequency response of the filter at the input frequency
           lowPassFilter.getFrequencyResponse(inputSampleArray, outputSampleArray, phaseResponseArray);
           // decimate the filtered audio data by only keeping every 8th sample
