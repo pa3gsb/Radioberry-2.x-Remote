@@ -13,6 +13,8 @@ export class MicrophoneComponent implements OnInit {
 
   transmit: boolean = false;
 
+  samplerate: number = 100;
+
   private decimationCount: number = 0;
 
   private audioSource: MediaStreamAudioSourceNode;
@@ -56,23 +58,15 @@ export class MicrophoneComponent implements OnInit {
 
         if (event.data.level !== undefined) MicrophoneComponent.displayMicLevel(event.data.level);
 
+        // sample rate set to 8Khz.
         const microphone: Microphone = new Microphone();
-        // create a low-pass filter with a cutoff frequency of 3 kHz
-        // before decimation
-        var lpf = require('low-pass-filter').lowPassFilter;
-        lpf(event.data.inputBuffer, 3000, 48000, 1);
         for (let i = 0; i < event.data.inputBuffer.length; i++) {
-          // decimate the filtered audio data by only keeping every 8th sample
-          if (this.decimationCount % 8 == 0) {
             let tsd: any = new Number();
             tsd = event.data.inputBuffer[i];
             tsd = 32767.0 * tsd;
             tsd = (tsd << 16) >> 16;
             microphone.mic.push(tsd);
-          }
-          this.decimationCount++;
         }
-        this.decimationCount = this.decimationCount % 8;
         this.websocket.sendWebsocketData(microphone);
       };
       return Promise.resolve(this.audioworkletNode);
@@ -90,11 +84,12 @@ export class MicrophoneComponent implements OnInit {
   }
 
   private createAudioContext(stream: MediaStream): AudioContext | undefined {
-    const audioContext = new ((<any>window).AudioContext || (<any>window).webkitAudioContext)() as AudioContext;
+    const audioContext = new ((<any>window).AudioContext || (<any>window).webkitAudioContext)({sampleRate: 48000}) as AudioContext;
     this.audioSource = audioContext.createMediaStreamSource(stream);
     this.audioAnalyser = audioContext.createAnalyser();
     this.audioSource.connect(this.audioAnalyser);
-    //this.audioSource.connect(audioContext.destination);
+    //console.log(audioContext.sampleRate);
+    //this.samplerate = audioContext.sampleRate;
     return audioContext;
   }
 

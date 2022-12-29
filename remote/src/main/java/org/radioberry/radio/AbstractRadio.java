@@ -283,16 +283,16 @@ public abstract class AbstractRadio implements IRadio, IStreamRxIQ {
   @Override
   public void processMicrophoneStream(short[] inputStream) {
 
-    short[] upSampleStream = new short[inputStream.length * 6];
-    upSampleStream = upSampleMicrophoneStream(inputStream);
+    //short[] upSampleStream = new short[inputStream.length * 6];
+    //upSampleStream = upSampleMicrophoneStream(inputStream);
 
-    for (int i = 0; i < upSampleStream.length; i++) {
+    for (int i = 0; i < inputStream.length; i++) {
 
       countMicSamples++;
 
       if (micSampleRingbuffer.size() < micSampleRingbuffer.capacity()) {
         try {
-          micSampleRingbuffer.add(Integer.valueOf(upSampleStream[i]));
+          micSampleRingbuffer.add(Integer.valueOf(inputStream[i]));
         } catch (InterruptedException ex) {
         }
       } else  overflowCount++;

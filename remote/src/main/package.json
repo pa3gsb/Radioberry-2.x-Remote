@@ -1,6 +1,6 @@
 {
   "name": "radioberry",
-  "version": "0.1.16",
+  "version": "0.1.21",
   "scripts": {
     "ng": "ng",
     "watch": "ng build --watch --configuration development",
